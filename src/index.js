@@ -1,17 +1,93 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import {Card, Table} from "react-bootstrap";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import Moment from 'moment';
+
+function RequestInfoRow(props) {
+    const data = props.data;
+    return (
+        <tr key={data['id']}>
+            <td>{data['id']}</td>
+            <td>{data['externalID']}</td>
+            <td>{Moment(data['creationDate']).format('DD-MM-YYYY HH:MM:SS')}</td>
+            <td>{Moment(data['lastUpdateDate']).format('DD-MM-YYYY HH:MM:SS')}</td>
+            <td>
+                <p>
+                    <a href={'/clients/' + data['formID']}>{data['formID'] + ' ' + data['borrowerFio']}</a>
+                </p>
+                <p>{data['pointID'] + ' ' + (data['salePoint']) + ', ' + data['agent']}</p>
+            </td>
+            <td>
+                <p>{data['askedSum']}</p>
+                <p>{data['givenSum']}</p>
+            </td>
+            <td>{data['status']}</td>
+            <td><a href={"/api/v1/documents/" + data['id'] + "/downloadKOD"}><strong className="i-download"></strong></a></td>
+        </tr>
+    );
+}
+
+class RequestTable extends React.Component {
+
+    componentDidMount() {
+        console.log("Fetch");
+        const requestOptions = {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        };
+        fetch('http://localhost:9084', requestOptions)
+            .then(response => response.json())
+            .then(response => {
+                const tableRows = [];
+                for (const el of response) {
+                    tableRows.push(<RequestInfoRow data = {el}/>)
+                }
+                this.setState({
+                    tableRows: tableRows
+                })
+            });
+    }
+
+    render() {
+        let tableRows;
+        if (this.state === null) {
+            tableRows = "Fetching...";
+        } else {
+            tableRows = this.state.tableRows;
+        }
+        return (
+            <html lang="en">
+            <body>
+            <div className="mainInterface">
+                <div>
+                    <Card>
+                        <Table className={"table-bordered"} id="req_tbl">
+                            <thead>
+                            <tr>
+                                <th>ID Заявки (Банк)</th>
+                                <th>ID Заявки (Партнер)</th>
+                                <th>Дата создания</th>
+                                <th>Дата изменения</th>
+                                <th>Заявитель/Точка/Агент</th>
+                                <th>Сумма</th>
+                                <th>Статус</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {tableRows}
+                            </tbody>
+                        </Table>
+                    </Card>
+                </div>
+            </div>
+            </body>
+            </html>
+        );
+    }
+}
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+root.render(<RequestTable/>);

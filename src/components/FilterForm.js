@@ -5,31 +5,6 @@ import {Col, Form, FormLabel, Row} from "react-bootstrap";
 import 'bootstrap-select/dist/js/bootstrap-select.min.js';
 import 'bootstrap-select/dist/css/bootstrap-select.min.css';
 import RequestTable from "./RequestTable";
-import Moment from "moment/moment";
-
-function RequestInfoRow(props) {
-    const data = props.data;
-    return (
-        <tr key={data['id']}>
-            <td>{data['id']}</td>
-            <td>{data['externalID']}</td>
-            <td>{Moment(data['creationDate']).format('DD-MM-YYYY HH:MM:SS')}</td>
-            <td>{Moment(data['lastUpdateDate']).format('DD-MM-YYYY HH:MM:SS')}</td>
-            <td>
-                <p>
-                    <a href={'/clients/' + data['formID']}>{data['formID'] + ' ' + data['borrowerFio']}</a>
-                </p>
-                <p>{data['pointID'] + ' ' + (data['salePoint']) + ', ' + data['agent']}</p>
-            </td>
-            <td>
-                <p>{data['askedSum']}</p>
-                <p>{data['givenSum']}</p>
-            </td>
-            <td>{data['status']}</td>
-            <td><a href={"/api/v1/documents/" + data['id'] + "/downloadKOD"}><strong className="i-download"></strong></a></td>
-        </tr>
-    );
-}
 
 class FilterForm extends React.Component {
 
@@ -46,7 +21,8 @@ class FilterForm extends React.Component {
             passport: '',
             agentID: '',
             status: '',
-            statusesToShow: []
+            statusesToShow: [],
+            fetched: null
         };
 
         this.handleInputChange = this.handleInputChange.bind(this);
@@ -54,7 +30,13 @@ class FilterForm extends React.Component {
     }
 
     componentDidMount() {
+        console.log("Fetch rqs");
+        this.fetchRqs();
         console.log("Fetch statuses");
+        this.fetchStatuses();
+    }
+
+    fetchStatuses() {
         const requestOptions = {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }
@@ -84,12 +66,12 @@ class FilterForm extends React.Component {
         fetch('http://localhost:9084/search?' + new URLSearchParams(paramMap), requestOptions)
             .then(response => response.json())
             .then(response => {
-                const tableRows = [];
-                for (const el of response) {
-                    tableRows.push(<RequestInfoRow data = {el}/>)
-                }
+                // const tableRows = [];
+                // for (const el of response) {
+                //     tableRows.push(<RequestInfoRow data = {el}/>)
+                // }
                 this.setState({
-                    fetched: tableRows
+                    fetched: response
                 })
             });
     }

@@ -1,6 +1,5 @@
 import React from 'react';
 import FilterForm from "./FilterForm";
-import RequestTable from "./RequestTable";
 import {Card} from "react-bootstrap";
 
 class IndexPage extends React.Component {
@@ -12,7 +11,6 @@ class IndexPage extends React.Component {
                 <div>
                     <Card>
                         <FilterForm/>
-                        <RequestTable/>
                     </Card>
                 </div>
             </div>

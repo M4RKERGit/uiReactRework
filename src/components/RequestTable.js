@@ -4,6 +4,15 @@ import Moment from "moment";
 
 class RequestTable extends React.Component {
 
+    constructor(props) {
+        super(props);
+        this.setState({tableRows: props.fetched})
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this.setState({tableRows: nextProps.fetched});
+    }
+
     componentDidMount() {
         console.log("Fetch");
         const requestOptions = {
@@ -25,7 +34,7 @@ class RequestTable extends React.Component {
 
     render() {
         let tableRows;
-        if (this.state === null) {
+        if (this.state === null || this.state.tableRows === null) {
             tableRows = "Fetching...";
         } else {
             tableRows = this.state.tableRows;

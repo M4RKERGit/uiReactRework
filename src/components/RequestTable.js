@@ -45,14 +45,8 @@ class RequestTable extends React.Component {
     }
 
     render() {
-        let tableRows;
-        if (this.state === null || this.state.tableRows === null) {
-            tableRows = "Fetching...";
-        } else {
-            tableRows = [];
-            for (let el of this.state.tableRows) {
-                tableRows.push(<RequestInfoRow key={el.id} data = {el}/>);
-            }
+        if (this.state === null || this.state.tableRows === null || this.state.tableRows === 'loading') {
+            return <div>Загрузка...</div>;
         }
         return (
             <Table className="table-bordered" id="req_tbl">
@@ -69,7 +63,7 @@ class RequestTable extends React.Component {
                 </tr>
                 </thead>
                 <tbody>
-                {tableRows}
+                    {this.state.tableRows.map(r => <RequestInfoRow key={r.id} data = {r}/>)}
                 </tbody>
             </Table>
         );

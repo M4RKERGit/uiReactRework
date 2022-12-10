@@ -429,3 +429,45 @@ ul.main-nav li a:hover{
 input[type="file"] {
   display: none;
 }
+
+.myPagination {
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  list-style-type: none;
+  padding: 0 5rem;
+}
+
+.myPagination li a {
+  border-radius: 7px;
+  padding: 0.1rem 1rem;
+  border: gray 1px solid;
+  cursor: pointer;
+}
+
+.myPagination li.previous a,
+.myPagination li.next a,
+.myPagination li.break a {
+  border-color: transparent;
+}
+
+.myPagination li.active a {
+  background-color: #0366d6;
+  border-color: transparent;
+  color: white;
+  min-width: 32px;
+}
+
+.myPagination li.disabled a {
+  color: grey;
+}
+
+.myPagination li.disable,
+.myPagination li.disabled a {
+  cursor: default;
+}
+
+.activePage {
+  margin-top: 10px;
+}

@@ -1,34 +1,54 @@
-import React from "react";
+import React, {useState} from "react";
 import Select from 'react-select'
 import makeAnimated from 'react-select/animated';
 import {Card, Col, Form, FormLabel, Row} from "react-bootstrap";
 import 'bootstrap-select/dist/js/bootstrap-select.min.js';
 import 'bootstrap-select/dist/css/bootstrap-select.min.css';
 import RequestTable from "./RequestTable";
+import ReactPaginate from "react-paginate";
 
 class FilterForm extends React.Component {
 
+    defaultParams = {
+        internalID: '',
+        externalID: '',
+        partnerID: '',
+        fio: '',
+        dateTo: '',
+        dateFrom: '',
+        salePointID: '',
+        passport: '',
+        agentID: '',
+        status: '',
+        page: 0,
+        size: 10
+    };
+
     constructor(props) {
         super(props);
+        const paramsCopy = {};
+        const entries = Object.entries(this.defaultParams);
+        for (const el of entries) {
+            paramsCopy[el] = entries[el];
+        }
         this.state = {
-            searchParams: {
-                internalID: '',
-                externalID: '',
-                partnerID: '',
-                fio: '',
-                dateTo: '',
-                dateFrom: '',
-                salePointID: '',
-                passport: '',
-                agentID: '',
-                status: '',
-            },
+            searchParams: paramsCopy,
             statusesToShow: [],
-            fetched: null
+            fetched: null,
+            totalItems: -1
         };
 
         this.handleInputChange = this.handleInputChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleReset = this.handleReset.bind(this);
+        this.pageHandler = this.pageHandler.bind(this)
+    }
+
+    pageHandler(newPage) {
+        let params = this.state.searchParams;
+        params.page = newPage;
+        this.setState({searchParams: params});
+        this.fetchRqs(this.state.searchParams);
     }
 
     componentDidMount() {
@@ -55,6 +75,11 @@ class FilterForm extends React.Component {
     }
 
     fetchRqs(params) {
+
+        this.setState({
+            fetched: 'loading'
+        })
+
         const requestOptions = {
             method: 'GET',
             headers: {'Content-Type': 'application/json'}
@@ -65,7 +90,10 @@ class FilterForm extends React.Component {
         delete paramMap['statusesToShow'];
         fetch('http://localhost:9084/search?' + new URLSearchParams(paramMap), requestOptions)
             .then(response => response.json())
-            .then(response => {this.setState({fetched: response})});
+            .then(response => {this.setState({
+                fetched: response['hits'],
+                totalItems: response['total']
+            })});
     }
 
     handleInputChange(event) {
@@ -85,6 +113,15 @@ class FilterForm extends React.Component {
         event.preventDefault();
     }
 
+    handleReset(event) {
+        this.resetParams();
+        this.handleSubmit(event);
+    }
+
+    resetParams() {
+        this.setState({searchParams: this.defaultParams});
+    }
+
     handleMultiSelectChange = (e) => {
         let value = Array.from(e, option => option.value);
         let params = this.state.searchParams;
@@ -99,7 +136,7 @@ class FilterForm extends React.Component {
         return (
             <div>
                 <Card>
-                    <Form name="filterForm" id="filterForm" method="get" onSubmit={this.handleSubmit}>
+                    <Form name="filterForm" id="filterForm" method="get" onSubmit={this.handleSubmit} onReset={this.handleReset}>
                         <Row>
                             <Col sm={2}>
                                 <FormLabel>ID заявки банка</FormLabel>
@@ -157,6 +194,8 @@ class FilterForm extends React.Component {
                             </Col>
                         </Row>
 
+                        <input form="filterForm" type="hidden" name="page" id="pageParam" value={this.state.searchParams.page}/>
+
                         <br/>
 
                     </Form>
@@ -164,11 +203,55 @@ class FilterForm extends React.Component {
 
                 <Card>
                     <RequestTable fetched={this.state.fetched}/>
+                    <PaginatedItems handler={this.pageHandler} searchParams={this.state.searchParams} totalItems={this.state.totalItems}/>
+                    <Row>
+                        <Col sm={4}/>
+                        <Col sm={2}>
+                            <div>Элементов на странице: {this.state.searchParams.size}</div>
+                        </Col>
+                        <Col sm={2}>
+                            <div>Всего элементов: {this.state.totalItems}</div>
+                        </Col>
+                        <Col sm={4}/>
+                    </Row>
+                    <Row/>
+                    <Row/>
                 </Card>
-
             </div>
         );
     }
+}
+
+function PaginatedItems({handler, searchParams, totalItems}) {
+
+    const [itemOffset, setItemOffset] = useState(0);
+
+    const itemsPerPage = searchParams.size;
+    const endOffset = itemOffset + itemsPerPage;
+    console.log(`Loading items from ${itemOffset} to ${endOffset}`);
+    const pageCount = Math.ceil(totalItems/itemsPerPage);
+
+    const handlePageClick = (event) => {
+        const newOffset = (event.selected * itemsPerPage) % totalItems;
+        console.log(
+            `User requested page number ${event.selected + 1}, which is offset ${newOffset}`
+        );
+        setItemOffset(newOffset);
+        handler(event.selected + 1);
+    };
+
+    return (
+        <ReactPaginate className="myPagination"
+            breakLabel="..."
+            nextLabel="Следующая >"
+            onPageChange={handlePageClick}
+            pageRangeDisplayed={5}
+            pageCount={pageCount}
+            previousLabel="< Предыдущая"
+            renderOnZeroPageCount={null}
+            activeClassName={"activePage"}
+        />
+    );
 }
 
 function getStylesForSelect() {

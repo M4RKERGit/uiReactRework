@@ -1,9 +1,13 @@
 import React from "react";
+import Select from 'react-select'
+import makeAnimated from 'react-select/animated';
 import {Col, Form, FormLabel, Row} from "react-bootstrap";
+import 'bootstrap-select/dist/js/bootstrap-select.min.js';
+import 'bootstrap-select/dist/css/bootstrap-select.min.css';
 
 function SelectOption(num, text) {
     return (
-        <option value={num}>{text}</option>
+        {value: num, label: text}
     );
 }
 
@@ -14,13 +18,15 @@ class FilterForm extends React.Component {
         this.state = {
             internalID: '',
             externalID: '',
-            statuses: [],
             partnerID: '',
             fio: '',
-            date: '',
+            dateTo: '',
+            dateFrom: '',
             salePointID: '',
             passport: '',
-            agentID: ''
+            agentID: '',
+            status: '',
+            statusesToShow: []
         };
 
         this.handleInputChange = this.handleInputChange.bind(this);
@@ -28,7 +34,7 @@ class FilterForm extends React.Component {
     }
 
     componentDidMount() {
-        console.log("Fetch");
+        console.log("Fetch statuses");
         const requestOptions = {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }
@@ -36,13 +42,13 @@ class FilterForm extends React.Component {
         fetch('http://localhost:9084/search/getStatuses', requestOptions)
             .then(response => response.json())
             .then(response => {
-                const statuses = {};
-                for (let i = 0; i < response.length; i++) {
-                    statuses[i] = response[i];
+                const statusOptions = [];
+                if (response != null) {
+                    for (let i = 0; i < response.length; i++) {
+                        statusOptions.push(SelectOption(i, response[i]));
+                    }
                 }
-                this.setState({
-                    statusesToShow: statuses
-                })
+                this.setState({statusesToShow: statusOptions})
             });
     }
 
@@ -58,11 +64,41 @@ class FilterForm extends React.Component {
     }
 
     handleSubmit(event) {
-        alert('A name was submitted: ' + this.state.value);
+        alert('A name was submitted: ' + this.state);
         event.preventDefault();
     }
 
+    handleMultiSelectChange = (e) => {
+        let value = Array.from(e, option => option.value);
+        console.log(value);
+        this.setState({status: value});
+    }
+
     render() {
+
+        const statusOptions = this.state.statusesToShow;
+        const targetHeight = 35;
+
+        const styles = {
+            control: (base) => ({
+                ...base,
+                minHeight: 'initial',
+            }),
+            valueContainer: (base) => ({
+                ...base,
+                height: `${targetHeight - 1 - 1}px`,
+                padding: '0 8px',
+            }),
+            clearIndicator: (base) => ({
+                ...base,
+                padding: `${(targetHeight - 20 - 1 - 1) / 2}px`,
+            }),
+            dropdownIndicator: (base) => ({
+                ...base,
+                padding: `${(targetHeight - 20 - 1 - 1) / 2}px`,
+            }),
+        };
+
         return (
             <Form name="filterForm" id="filterForm" method="get" onSubmit={this.handleSubmit}>
                 <Row>
@@ -76,11 +112,52 @@ class FilterForm extends React.Component {
                     </Col>
                     <Col sm={4}>
                         <FormLabel>Статус заявок</FormLabel>
-                        <select id="statuses" name="statuses" multiple="multiple" className={"selectpicker, form-control"}>
-                            {}
-                        </select>
+                        <Select styles={styles} id="status" name="status" onChange={this.handleMultiSelectChange} components={makeAnimated()} isMulti={true} closeMenuOnSelect={false} options={statusOptions}/>
+                    </Col>
+                    <Col sm={4}>
+                        <FormLabel>Партнер</FormLabel>
+                        <input type="text" name="partnerID" id="partnerID" onChange={this.handleInputChange} className="form-control"/>
                     </Col>
                 </Row>
+
+                <Row>
+                    <Col sm={4}>
+                        <FormLabel>ФИО Заявителя</FormLabel>
+                        <input type="text" name="fio" id="fio" onChange={this.handleInputChange} className="form-control" pattern="^[A-ZА-Яa-zа-я \-]*$"/>
+                    </Col>
+                    <Col sm={4}>
+                        <FormLabel style={{marginBottom: 3}}>Период оформления</FormLabel>
+                        <div className="date-group">
+                            c <input type="date" name="dateFrom" id="dateFrom" onChange={this.handleInputChange} min="2000-01-01" max="2099-12-31"/>
+                            до <input type="date" name="dateTo" id="dateTo" onChange={this.handleInputChange} min="2000-01-01" max="2099-12-31"/>
+                        </div>
+                    </Col>
+                    <Col sm={4}>
+                        <FormLabel>Точка</FormLabel>
+                        <input type="text" name="salePointID" id="salePointID" onChange={this.handleInputChange} className="form-control"/>
+                    </Col>
+                </Row>
+
+                <Row>
+                    <Col sm={2}>
+                        <FormLabel>Паспорт (серия/номер)</FormLabel>
+                        <input type="text" name="passport" id="passport" onChange={this.handleInputChange} className="form-control"/>
+                    </Col>
+                    <Col sm={6}/>
+                    <Col sm={4}>
+                        <FormLabel>ФИО Агента (УБЛ)</FormLabel>
+                        <input type="text" name="agentID" id="agentID" onChange={this.handleInputChange} className="form-control"/>
+                    </Col>
+                </Row>
+
+                <Row>
+                    <Col sm={5} className="btn-group">
+                        <button form="filterForm" type="submit" className="btn btn-find btn-success">Поиск</button>
+                        <button form="filterForm" type="reset" className="btn btn-res">Сбросить</button>
+                    </Col>
+                </Row>
+
+                <br/>
             </Form>
         );
     }

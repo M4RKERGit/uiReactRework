@@ -28,8 +28,9 @@ html {
 .form-control {
   border: 1px solid #797979;
   border-radius: 4px;
-  margin-top: 5px;
   font-size: 12px;
+  height: 35px;
+  padding-bottom: 0;
 }
 
 #size {

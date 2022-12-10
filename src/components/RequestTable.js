@@ -30,10 +30,10 @@ class RequestTable extends React.Component {
 
     constructor(props) {
         super(props);
-        this.setState({tableRows: props.fetched})
+        this.state = {tableRows: props.fetched};
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         if (nextProps.fetched != null) {
             if (this.state == null) {
                 this.state = {tableRows: nextProps.fetched};
@@ -51,7 +51,7 @@ class RequestTable extends React.Component {
         } else {
             tableRows = [];
             for (let el of this.state.tableRows) {
-                tableRows.push(<RequestInfoRow data = {el}/>);
+                tableRows.push(<RequestInfoRow key={el.id} data = {el}/>);
             }
         }
         return (

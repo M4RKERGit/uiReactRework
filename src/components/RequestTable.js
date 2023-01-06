@@ -6,7 +6,11 @@ function RequestInfoRow(props) {
     const data = props.data;
     return (
         <tr key={data['id']}>
-            <td>{data['id']}</td>
+            <td>
+                <p>
+                    <a href={'request/' + data['id']}>{data['id']}</a>
+                </p>
+            </td>
             <td>{data['externalID']}</td>
             <td>{Moment(data['creationDate']).format('DD-MM-YYYY HH:MM:SS')}</td>
             <td>{Moment(data['lastUpdateDate']).format('DD-MM-YYYY HH:MM:SS')}</td>

@@ -14,7 +14,7 @@ html {
 }
 
 .mainInterface {
-  margin-top: 30px;
+  margin-top: 10px;
   margin-bottom: 100px
 }
 
@@ -54,8 +54,10 @@ html {
 
 .main-logo{
   display: inline-block;
-  width: 64px;
-  height: 64px;
+  width: 48px;
+  height: 48px;
+  position: relative;
+  right: 30px;
 }
 
 ul.main-nav {
